@@ -31,7 +31,7 @@ func init() {
 }
 
 // Dispose 处理函数
-func Dispose(concurrency, totalNumber uint64, request *model.Request) {
+func Dispose(concurrency uint64, totalNumber uint64, request *model.Request) {
 	// 设置接收数据缓存
 	ch := make(chan *model.RequestResults, 1000)
 	var (
@@ -100,5 +100,4 @@ func Dispose(concurrency, totalNumber uint64, request *model.Request) {
 	close(ch)
 	// 数据全部处理完成了
 	wgReceiving.Wait()
-	return
 }

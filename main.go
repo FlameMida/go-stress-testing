@@ -36,9 +36,10 @@ var (
 	headers     array             // 自定义头信息传递给服务器
 	body        = ""              // HTTP POST方式传送数据
 	maxCon      = 1               // 单个连接最大请求数
-	code        = 200             //成功状态码
+	code        = 200             // 成功状态码
 	http2       = false           // 是否开http2.0
 	keepalive   = false           // 是否开启长连接
+	method      = "GET"           // 请求方法
 )
 
 func init() {
@@ -46,6 +47,7 @@ func init() {
 	flag.Uint64Var(&totalNumber, "n", totalNumber, "请求数(单个并发/协程)")
 	flag.StringVar(&debugStr, "d", debugStr, "调试模式")
 	flag.StringVar(&requestURL, "u", requestURL, "压测地址")
+	flag.StringVar(&method, "M", method, "请求方法")
 	flag.StringVar(&path, "p", path, "curl文件路径")
 	flag.StringVar(&verify, "v", verify, "验证方法 http 支持:statusCode、json webSocket支持:json")
 	flag.Var(&headers, "H", "自定义头信息传递给服务器 示例:-H 'Content-Type: application/json'")
@@ -71,7 +73,7 @@ func main() {
 		return
 	}
 	debug := strings.ToLower(debugStr) == "true"
-	request, err := model.NewRequest(requestURL, verify, code, 0, debug, path, headers, body, maxCon, http2, keepalive)
+	request, err := model.NewRequest(requestURL, verify, code, 0, debug, path, headers, method, body, maxCon, http2, keepalive)
 	if err != nil {
 		fmt.Printf("参数不合法 %v \n", err)
 		return
@@ -80,5 +82,4 @@ func main() {
 	request.Print()
 	// 开始处理
 	server.Dispose(concurrency, totalNumber, request)
-	return
 }

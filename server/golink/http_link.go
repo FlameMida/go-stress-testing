@@ -39,9 +39,9 @@ func sendList(requestList []*model.Request) (isSucceed bool, errCode int, reques
 		succeed, code, u, length := send(request)
 		isSucceed = succeed
 		errCode = code
-		requestTime = requestTime + u
-		contentLength = contentLength + length
-		if succeed == false {
+		requestTime += u
+		contentLength += length
+		if !succeed {
 			break
 		}
 	}

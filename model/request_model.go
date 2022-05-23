@@ -84,7 +84,7 @@ type Request struct {
 	MaxCon    int               // 每个连接的请求数
 	HTTP2     bool              // 是否使用http2.0
 	Keepalive bool              // 是否开启长连接
-	Code      int               //验证的状态码
+	Code      int               // 验证的状态码
 }
 
 // GetBody 获取请求数据
@@ -121,10 +121,11 @@ func (r *Request) GetVerifyWebSocket() VerifyWebSocket {
 // timeout 请求超时时间
 // debug 是否开启debug
 // path curl文件路径 http接口压测，自定义参数设置
-func NewRequest(url string, verify string, code int, timeout time.Duration, debug bool, path string, reqHeaders []string,
-	reqBody string, maxCon int, http2 bool, keepalive bool) (request *Request, err error) {
+func NewRequest(url, verify string, code int, timeout time.Duration, debug bool, path string, reqHeaders []string, method, reqBody string, maxCon int, http2, keepalive bool) (request *Request, err error) {
+	if method == "" {
+		method = "GET"
+	}
 	var (
-		method  = "GET"
 		headers = make(map[string]string)
 		body    string
 	)
@@ -142,7 +143,6 @@ func NewRequest(url string, verify string, code int, timeout time.Duration, debu
 		body = curl.GetBody()
 	} else {
 		if reqBody != "" {
-			method = "POST"
 			body = reqBody
 		}
 		for _, v := range reqHeaders {
@@ -153,13 +153,14 @@ func NewRequest(url string, verify string, code int, timeout time.Duration, debu
 		}
 	}
 	form := ""
-	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+	switch {
+	case strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://"):
 		form = FormTypeHTTP
-	} else if strings.HasPrefix(url, "ws://") || strings.HasPrefix(url, "wss://") {
+	case strings.HasPrefix(url, "ws://") || strings.HasPrefix(url, "wss://"):
 		form = FormTypeWebSocket
-	} else if strings.HasPrefix(url, "grpc://") || strings.HasPrefix(url, "rpc://") {
+	case strings.HasPrefix(url, "grpc://") || strings.HasPrefix(url, "rpc://"):
 		form = FormTypeGRPC
-	} else {
+	default:
 		form = FormTypeHTTP
 		url = fmt.Sprintf("http://%s", url)
 	}
@@ -240,7 +241,6 @@ func (r *Request) Print() {
 	result = fmt.Sprintf("%s verify:%s \n timeout:%s \n debug:%v \n", result, r.Verify, r.Timeout, r.Debug)
 	result = fmt.Sprintf("%s http2.0：%v \n keepalive：%v \n maxCon:%v ", result, r.HTTP2, r.Keepalive, r.MaxCon)
 	fmt.Println(result)
-	return
 }
 
 // GetDebug 获取 debug 参数
